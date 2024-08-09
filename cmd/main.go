@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/soufianiso/letterboxd/handler"
 	"github.com/labstack/echo"
-	"github.com/soufiansio/letterboxd/handler"
 )
 
 
