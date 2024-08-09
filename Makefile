@@ -1,3 +1,5 @@
 run:
-	@echo "Running my application"
+	@echo "temple generate:"
+	@templ generate
+	@echo "Running my application..."
 	@air
