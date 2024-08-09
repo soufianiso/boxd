@@ -1,10 +1,11 @@
 package user
 
 import "github.com/soufianiso/letterboxd/view/layout"
+import "github.com/soufianiso/letterboxd/model"
 
-templ Show(){
+templ Show(user model.User){
 
 	@layout.Base(){
-		<h1>user</h1>	
+		<h1>{ user.Email }</h1>	
 	}
 }
