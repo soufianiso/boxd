@@ -7,5 +7,6 @@ type UserHandler struct { }
 
 
 func (h UserHandler) HandleUserShow(c echo.Context) error{
+		
 	return nil
 } 
