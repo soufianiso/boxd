@@ -7,10 +7,9 @@ import (
 )
 
 
-type UserHandler struct { }
 
 
-func (h UserHandler) HandleUserShow(c echo.Context) error{
+func HandleUserShow(c echo.Context) error{
 	u := model.User{
 		Email: "soufiane@gmail.com" ,
 	}
