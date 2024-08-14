@@ -1,18 +1,12 @@
 package main
 
 import (
-	"github.com/soufianiso/letterboxd/handler"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/soufianiso/letterboxd/server"
 )
 
 
 func main(){
-	app := echo.New()
-	app.Use(middleware.Logger())
-	app.Use(middleware.Recover())
+	app := server.NewServer(":8080") 
+	app.Run()
 
-
-	app.GET("/", handler.HandleUserShow)
-	app.Start(":8080")
 }
