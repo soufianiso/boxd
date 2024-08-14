@@ -22,7 +22,7 @@ func NewServer(port string) *Server{
 
 func (s *Server) Run() {
 	router := mux.NewRouter()
-	router.HandleFunc("/", utils.MiddlewearApi(handlers.GetFilms))
+	router.HandleFunc("/account", utils.MiddlewearApi(handlers.HandleAccount))
 	http.ListenAndServe(s.port, router)
 }
 
