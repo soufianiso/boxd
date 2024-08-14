@@ -13,7 +13,7 @@ func MiddlewearApi(f ApiHandler) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request){
 		err := f(w,r)  
 		if err != nil{
-			log.Panic(err)
+			log.Print(err)
 		}
 	}
 }
