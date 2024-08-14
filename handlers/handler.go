@@ -2,27 +2,36 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	// "github.com/gorilla/mux"
+
+	"github.com/soufianiso/letterboxd/types"
+	"github.com/soufianiso/letterboxd/utils"
 )
 
-type response2 struct {
-	Page   int      `json:"page"`
-	Fruits []string `json:"fruits"`
-}
 
-func GetFilms(w http.ResponseWriter, r *http.Request)  error {
-	fruit := response2{
-		Page: 1,
-		Fruits: []int{1,2},	
-	}
-	json_data, err := json.Marshal(fruit)
+func GetFilms(w http.ResponseWriter, r *http.Request) error{
+	if r.Method == "POST"{
+		user := types.User{}
+		err := json.NewDecoder(r.Body).Decode(&user)
+		if err != nil{
+			return err
+		}
+		userjson, err := json.Marshal(&user)
+		if err != nil{
+			return err
+		}
 
-	if err != nil{
-		return err
+		err = utils.WriteHeaders(w)
+		if err != nil{
+			return err
+		}
+	
+
+		w.Write(userjson)
+
+
+
 	}
-	fmt.Fprint(w,string(json_data))
 	return nil
 }
 
