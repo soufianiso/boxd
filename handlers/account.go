@@ -1,14 +1,16 @@
 package handlers
 
 import (
-	"github.com/soufianiso/letterboxd/types"
-	"github.com/soufianiso/letterboxd/utils"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
+	"github.com/soufianiso/letterboxd/storage"
+	"github.com/soufianiso/letterboxd/types"
+	"github.com/soufianiso/letterboxd/utils"
 )
-
 
 func RegisterAccount(w http.ResponseWriter, r *http.Request) error{
 	user := types.User{}
@@ -28,9 +30,13 @@ func RegisterAccount(w http.ResponseWriter, r *http.Request) error{
 }
 
 
+
 func GetAccount(w http.ResponseWriter, r *http.Request) error{
-	utils.WriteHeaders(w)
-	fmt.Fprint(w,"ww")
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+	ss, err := storage.Store.FetchAccount(id)
+	fmt.Println(ss)
+	// utils.WriteHeaders(w)
 	return nil
 			
 }

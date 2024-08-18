@@ -7,6 +7,7 @@ import (
 )
 
 
+
 func HandleAccount(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "POST"{
 		return RegisterAccount(w,r)
