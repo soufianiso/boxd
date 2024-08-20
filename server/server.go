@@ -22,6 +22,7 @@ func NewServer(port string) *Server{
 
 func (s *Server) Run() {
 	router := mux.NewRouter()
+	// userstore := user.NewStore(s.db)
 	router.HandleFunc("/account", utils.MiddlewearApi(handlers.HandleAccount))
 	http.ListenAndServe(s.port, router)
 }
