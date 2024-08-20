@@ -1,4 +1,4 @@
-module github.com/soufianiso/letterboxd
+module github.com/soufianiso/boxd
 
 go 1.22.5
 
