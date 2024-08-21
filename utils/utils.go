@@ -1,19 +1,25 @@
 package utils
 
 import (
-	"log"
+	"encoding/json"
 	"net/http"
+
 )
 
 type ApiHandler func(http.ResponseWriter, *http.Request) error 
 
 
-// The MiddlewearApi function is a wrapper of my handlers to handler errors in one function
+type ApiError struct {
+	Error string
+}
+
+
+// The MiddlewearApi function is a wrapper of my handlers to handler errors 
 func MiddlewearApi(f ApiHandler) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request){
 		err := f(w,r)  
 		if err != nil{
-			log.Print(err)
+			WriteJson(w, http.StatusBadRequest, ApiError{Error: "invalid request"})
 		}
 	}
 }
@@ -28,4 +34,9 @@ func WriteHeaders(w http.ResponseWriter) error {
 
 
 
+func WriteJson(w http.ResponseWriter, status int, v any) error{
+	w.Header().Set("Content-Type","application-json")
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(v)
 
+}
