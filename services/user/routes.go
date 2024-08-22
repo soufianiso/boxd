@@ -9,7 +9,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/soufianiso/boxd/utils"
-	"github.com/soufianiso/boxd/types"
+
+	// "github.com/soufianiso/boxd/types"
+	"time"
 )
 
 // "database/sql"
@@ -29,19 +31,42 @@ func NewHandler(storage Store) *Handler {
 
 func(h *Handler) SetRoutes(r *mux.Router) *mux.Router{
 	r.HandleFunc("/user", utils.MiddlewearApi(h.userhandle)).Methods("POST")
+	r.HandleFunc("/user", utils.MiddlewearApi(h.handleLogin)).Methods("POST")
 	return r
 
 }
 
 func(h *Handler) userhandle(w http.ResponseWriter, r *http.Request) error{
+func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
+	// Define the signing key 
+	signingKey := []byte("secret")	
+	
+	// Create the claims
+	claims := jwt.MapClaims{
+		"username": "soufiane",
+		"exp": time.Now().Add(time.Hour * 72).Unix(),
+	}
+	
+	// Create the token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	user := types.User{}
 	err := json.NewDecoder(r.Body).Decode(&user)
+	// Sign the token with your secret key
+	tokenString, err := token.SignedString(signingKey)
 	if err != nil{
+		fmt.Println("Error signing key")
 		return err
 	}
 
 	utils.WriteJson(w, http.StatusOK , user) 
+	// user := types.User{}
+	// err = json.NewDecoder(r.Body).Decode(&user)
+	// if err != nil{
+	// 	return err
+	// }
+
+	utils.WriteJson(w, http.StatusOK , map[string]string{"autherization":tokenString}) 
 
 	return nil
 
