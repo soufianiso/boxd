@@ -1,7 +1,10 @@
 package user
 
 import (
-	"encoding/json"
+	"fmt"
+
+	jwt "github.com/golang-jwt/jwt/v5"
+	// "encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"

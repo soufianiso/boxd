@@ -2,8 +2,8 @@ package utils
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
-
 )
 
 type ApiHandler func(http.ResponseWriter, *http.Request) error 
@@ -19,6 +19,7 @@ func MiddlewearApi(f ApiHandler) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request){
 		err := f(w,r)  
 		if err != nil{
+			log.Panic(err)
 			WriteJson(w, http.StatusBadRequest, ApiError{Error: "invalid request"})
 		}
 	}
