@@ -1,17 +1,16 @@
 package user
 
 import (
-	"fmt"
+	"encoding/json"
 
-	jwt "github.com/golang-jwt/jwt/v5"
+	"github.com/soufianiso/boxd/types"
+
 	// "encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/soufianiso/boxd/auth"
 	"github.com/soufianiso/boxd/utils"
-
-	// "github.com/soufianiso/boxd/types"
-	"time"
 )
 
 // "database/sql"
@@ -31,45 +30,55 @@ func NewHandler(storage Store) *Handler {
 
 func(h *Handler) SetRoutes(r *mux.Router) *mux.Router{
 
-	r.HandleFunc("/user", utils.MiddlewearApi(h.handleLogin)).Methods("POST")
+	r.HandleFunc("/login", utils.ErrorHandler(h.handleLogin)).Methods("POST")
+	r.HandleFunc("/register", utils.ErrorHandler(h.handleRegister)).Methods("POST")
 	return r
 
 }
 
 func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
-	// Define the signing key 
-	signingKey := []byte("secret")	
-	
-	
-	// Create the claims
-	claims := jwt.MapClaims{
-		"username": "soufiane",
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
-	}
-	
-	// Create the token with claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	user := new(types.User)
 
-	// Sign the token with your secret key
-	tokenString, err := token.SignedString(signingKey)
-	if err != nil{
-		fmt.Println("Error signing key")
+	if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil {
 		return err
 	}
 
-	// user := types.User{}
-	// err = json.NewDecoder(r.Body).Decode(&user)
-	// if err != nil{
-	// 	return err
-	// }
+	secretkey := "secret"
+	tokenString, err := auth.Createjwt(user.Username, secretkey)
+	if err != nil{
+		return err
+	}
 
-	utils.WriteJson(w, http.StatusOK , map[string]string{"autherization":tokenString}) 
-
-	return nil
+	return utils.WriteJson(w, http.StatusOK , map[string]string{"Authorization": tokenString}) 
 
 }
 
+func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
+	user := new(types.User)
+	if err := json.NewDecoder(r.Body).Decode(user) ; err != nil{
+		return err
+	}
+	
+	_ , err := h.storage.GetUserByEmail(user.Username)
+	if err ==  nil{
+		return utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ 
+			Error: "email or password incorrect",
+		})
+	}
 
+	hashedPassword, err := auth.HashPassword(user.Password)
+	if err != nil{
+		return err
+	}
+
+	if err := h.storage.CreateUser(user.Username, hashedPassword) ; err != nil {
+		return err
+	}
+	
+	
+	return utils.WriteJson(w, http.StatusCreated, map[string]string{"status":"created"})
+
+}
 
 
 

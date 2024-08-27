@@ -29,5 +29,9 @@ func(a Api) Run(){
 	userHandler := user.NewHandler(userstore) 
 	userHandler.SetRoutes(router)
 
+	
+
 	http.ListenAndServe(a.port, router)
+
+	return 
 }

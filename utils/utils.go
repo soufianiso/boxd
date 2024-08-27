@@ -15,29 +15,30 @@ type ApiError struct {
 
 
 // The MiddlewearApi function is a wrapper of my handlers to handler errors 
-func MiddlewearApi(f ApiHandler) http.HandlerFunc {
+func ErrorHandler(f ApiHandler) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request){
 		err := f(w,r)  
 		if err != nil{
-			log.Panic(err)
-			WriteJson(w, http.StatusBadRequest, ApiError{Error: "invalid request"})
+			log.Print(err)
+			WriteError(w, http.StatusInternalServerError, ApiError{Error: "bad request"})
+			return 
 		}
 	}
 }
 
-
-func WriteHeaders(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type","application-json")
-	w.WriteHeader(http.StatusOK)
-	return nil
-}
-
-
-
-
 func WriteJson(w http.ResponseWriter, status int, v any) error{
 	w.Header().Set("Content-Type","application-json")
 	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(v)
 
+	return json.NewEncoder(w).Encode(v)
 }
+
+func WriteError(w http.ResponseWriter, status int, v any) error{
+	w.Header().Set("Content-Type","application-json")
+	w.WriteHeader(status)
+	return json.NewEncoder(w).Encode(v)
+}
+
+
+
+
