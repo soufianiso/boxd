@@ -29,20 +29,21 @@ func NewHandler(storage Store) *Handler {
 
 
 func(h *Handler) SetRoutes(r *mux.Router) *mux.Router{
-
 	r.HandleFunc("/login", utils.ErrorHandler(h.handleLogin)).Methods("POST")
 	r.HandleFunc("/register", utils.ErrorHandler(h.handleRegister)).Methods("POST")
-	return r
 
+	return r
 }
 
 func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
 	user := new(types.User)
 
+	// Convert request body to object
 	if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil {
 		return err
 	}
 
+	//create Signed the jwt token and create it 
 	secretkey := "secret"
 	tokenString, err := auth.Createjwt(user.Username, secretkey)
 	if err != nil{
@@ -50,15 +51,16 @@ func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
 	}
 
 	return utils.WriteJson(w, http.StatusOK , map[string]string{"Authorization": tokenString}) 
-
 }
 
 func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
 	user := new(types.User)
+	// Convert request body to object
 	if err := json.NewDecoder(r.Body).Decode(user) ; err != nil{
 		return err
 	}
 	
+	// Checking whether the email exists or not
 	_ , err := h.storage.GetUserByEmail(user.Username)
 	if err ==  nil{
 		return utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ 
@@ -66,18 +68,17 @@ func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
 		})
 	}
 
+	// hash the password
 	hashedPassword, err := auth.HashPassword(user.Password)
 	if err != nil{
 		return err
 	}
-
+	
 	if err := h.storage.CreateUser(user.Username, hashedPassword) ; err != nil {
 		return err
 	}
 	
-	
 	return utils.WriteJson(w, http.StatusCreated, map[string]string{"status":"created"})
-
 }
 
 
