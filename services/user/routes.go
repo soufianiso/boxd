@@ -5,6 +5,8 @@ import (
 
 	"github.com/soufianiso/boxd/types"
 
+	"github.com/joho/godotenv"
+	"os"
 	// "encoding/json"
 	"net/http"
 
@@ -52,8 +54,12 @@ func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
 	}
 
 	//create Signed the jwt token and create it 
-	secretkey := "secret"
-	tokenString, err := auth.Createjwt(user.Email, secretkey)
+	
+	godotenv.Load()
+	jwtsecret := os.Getenv("jwtsecret")
+
+
+	tokenString, err := auth.Createjwt(user.Email, jwtsecret)
 	if err != nil{
 		return err
 	}
