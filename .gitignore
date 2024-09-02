@@ -1,4 +1,3 @@
-.env
 tmp/
 vendor/
 **/*_templ.go
