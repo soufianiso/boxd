@@ -9,10 +9,10 @@ import (
 
 
 
-func Createjwt(user string, secret string) (string, error){
+func Createjwt(email string, secret string) (string, error){
 	signingKey := []byte("secret")	
 	claims := jwt.MapClaims{
-		"username": user,
+		"Email": email,
 		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	}
 

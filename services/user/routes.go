@@ -27,8 +27,16 @@ func NewHandler(storage Store) *Handler {
 }
 
 
+func allowCors(next http.Handler) http.Handler{
+	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request)  {
+		w.Header().Set("Access-Control-Allow-Origin", "*")	
+		next.ServeHTTP(w,r)
+	})
+}
+
 
 func(h *Handler) SetRoutes(r *mux.Router) *mux.Router{
+	r.Use(allowCors)
 	r.HandleFunc("/login", utils.ErrorHandler(h.handleLogin)).Methods("POST")
 	r.HandleFunc("/register", utils.ErrorHandler(h.handleRegister)).Methods("POST")
 
@@ -45,7 +53,7 @@ func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
 
 	//create Signed the jwt token and create it 
 	secretkey := "secret"
-	tokenString, err := auth.Createjwt(user.Username, secretkey)
+	tokenString, err := auth.Createjwt(user.Email, secretkey)
 	if err != nil{
 		return err
 	}
@@ -54,14 +62,15 @@ func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
 }
 
 func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
+
 	user := new(types.User)
 	// Convert request body to object
-	if err := json.NewDecoder(r.Body).Decode(user) ; err != nil{
+	if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil{
 		return err
 	}
 	
 	// Checking whether the email exists or not
-	_ , err := h.storage.GetUserByEmail(user.Username)
+	_ , err := h.storage.GetUserByEmail(user.Email)
 	if err ==  nil{
 		return utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ 
 			Error: "email or password incorrect",
@@ -74,7 +83,7 @@ func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
 		return err
 	}
 	
-	if err := h.storage.CreateUser(user.Username, hashedPassword) ; err != nil {
+	if err := h.storage.CreateUser(user, hashedPassword) ; err != nil {
 		return err
 	}
 	

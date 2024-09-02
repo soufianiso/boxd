@@ -30,13 +30,16 @@ func WriteJson(w http.ResponseWriter, status int, v any) error{
 	w.Header().Set("Content-Type","application-json")
 	w.WriteHeader(status)
 
-	return json.NewEncoder(w).Encode(v)
+	err :=  json.NewEncoder(w).Encode(v)
+	return err
 }
 
 func WriteError(w http.ResponseWriter, status int, v any) error{
 	w.Header().Set("Content-Type","application-json")
 	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(v)
+
+	err :=  json.NewEncoder(w).Encode(v)
+	return err
 }
 
 
