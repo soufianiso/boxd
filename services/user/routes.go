@@ -1,12 +1,16 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/soufianiso/boxd/types"
 
-	"github.com/joho/godotenv"
 	"os"
+
+	"github.com/joho/godotenv"
+
+	"log"
 	// "encoding/json"
 	"net/http"
 
@@ -27,10 +31,6 @@ type Handler struct{
 func NewHandler(storage Store) *Handler {
 	return &Handler{ storage : storage }
 }
-
-
-
-
 
 func(h *Handler) SetRoutes(r *mux.Router) *mux.Router{
 	r.HandleFunc("/login", utils.ErrorHandler(h.handleLogin)).Methods("POST")
@@ -61,7 +61,7 @@ func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
 }
 
 func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
-
+    ctx := r.Context()
 	user := new(types.User)
 	// Convert request body to object
 	if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil{
@@ -69,13 +69,19 @@ func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
 	}
 	
 	// Checking whether the email exists or not
-	_ , err := h.storage.GetUserByEmail(user.Email)
+	_ , err := h.storage.GetUserByEmail(ctx,user.Email)
+	if err == context.Canceled{
+		// Client canceled the request, so we stop processing
+		log.Println("Request canceled by the client")
+		return nil
+	}
+
 	if err ==  nil{
 		return utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ 
 			Error: "email or password incorrect",
 		})
 	}
-
+	
 	// hash the password
 	hashedPassword, err := auth.HashPassword(user.Password)
 	if err != nil{
@@ -85,7 +91,14 @@ func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
 	if err := h.storage.CreateUser(user, hashedPassword) ; err != nil {
 		return err
 	}
-	
+
+	select {
+    case <-ctx.Done(): // Handle request cancellation
+        if ctx.Err() == context.Canceled {
+            log.Println("Request was canceled by the client")
+            return nil
+        }
+    }
 	return utils.WriteJson(w, http.StatusCreated, map[string]string{"status":"created"})
 }
 
