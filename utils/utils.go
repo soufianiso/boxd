@@ -41,7 +41,3 @@ func WriteError(w http.ResponseWriter, status int, v any) error{
 	err :=  json.NewEncoder(w).Encode(v)
 	return err
 }
-
-
-
-
