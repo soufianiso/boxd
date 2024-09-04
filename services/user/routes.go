@@ -29,19 +29,12 @@ func NewHandler(storage Store) *Handler {
 }
 
 
-func allowCors(next http.Handler) http.Handler{
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request)  {
-		w.Header().Set("Access-Control-Allow-Origin", "*")	
-		next.ServeHTTP(w,r)
-	})
-}
+
 
 
 func(h *Handler) SetRoutes(r *mux.Router) *mux.Router{
-	r.Use(allowCors)
 	r.HandleFunc("/login", utils.ErrorHandler(h.handleLogin)).Methods("POST")
 	r.HandleFunc("/register", utils.ErrorHandler(h.handleRegister)).Methods("POST")
-
 	return r
 }
 
