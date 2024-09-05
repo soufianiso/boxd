@@ -41,3 +41,19 @@ func WriteError(w http.ResponseWriter, status int, v any) error{
 	err :=  json.NewEncoder(w).Encode(v)
 	return err
 }
+
+func CORSMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+        if r.Method == "OPTIONS" {
+            // Respond to preflight request with status 200 OK
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+
+        next.ServeHTTP(w, r)
+    })
+}

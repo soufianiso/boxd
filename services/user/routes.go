@@ -24,7 +24,7 @@ type Handler struct{
 	storage Store
 }
 
-func NewHandler(storage Store) *Handler {
+func UserHandler(storage Store) *Handler {
 	return &Handler{ storage : storage }
 }
 
