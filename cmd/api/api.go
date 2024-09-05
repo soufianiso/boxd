@@ -12,41 +12,22 @@ import (
 	"github.com/soufianiso/boxd/utils"
 )
 
-
-
-type Api struct {
-	port string
-	db	*sql.DB 
-}
-
-
-func NewServer(port string, db *sql.DB) *Api{
-	return &Api{ 
-		port: port, 
-		db : db,
-	}
-
-}
-
-func(a Api) Run(){
+func NewServer(db *sql.DB) http.Handler{
 	router := mux.NewRouter()
 
-	userstore := user.NewStorage(a.db)
-	userHandler := user.NewHandler(userstore) 
+	// user service	
+	userstore := user.NewStorage(db)
+	userHandler := user.UserHandler(userstore) 
 	userHandler.SetRoutes(router)
 
-	moviesStore := movies.NewStorage(a.db)
-	moviesHandler := movies.NewHandler(moviesStore) 
+	// movies service	
+	moviesStore := movies.NewStorage(db)
+	moviesHandler := movies.MoviesHandler(moviesStore) 
 	moviesHandler.SetRoutes(router)
 
+	// here is top level middleware stuff
 	handler := utils.CORSMiddleware(router)
-	//here top level http stuff
-	s := http.Server{
-		Addr: a.port,	
-		Handler: handler,
-	}
-
-	s.ListenAndServe()
+	return handler
 }
 
 

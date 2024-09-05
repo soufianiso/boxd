@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"net/http"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/soufianiso/boxd/cmd/api"
@@ -24,7 +25,13 @@ func main(){
 		log.Fatal(err)
 	}
 
-	app := api.NewServer(":8000", db) 
-	app.Run()
+	app := api.NewServer(db) 
+
+	s := http.Server{
+		Addr: ":8080",
+		Handler: app,
+	}
+
+	s.ListenAndServe()
 }
 

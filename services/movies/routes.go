@@ -14,7 +14,7 @@ type Handler struct{
 
 
 
-func NewHandler(store Store) *Handler{
+func MoviesHandler(store Store) *Handler{
 	return &Handler{store: store}
 }
 
