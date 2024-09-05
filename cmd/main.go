@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"fmt"
 	"net/http"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -13,12 +14,14 @@ import (
 
 func main(){
 	godotenv.Load()
+
 	conn := os.Getenv("postgres")
 
 	db, err := sql.Open("postgres",conn)	
 	if err != nil{
 		log.Fatal(err)
 	}
+
 	defer db.Close()
 
 	if err := db.Ping() ; err != nil{
@@ -32,6 +35,12 @@ func main(){
 		Handler: app,
 	}
 
-	server.ListenAndServe()
+	go func ()  {
+		log.Printf("listening on %s\n", server.Addr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Fprintf(os.Stderr, "error listening and serving: %s\n", err)
+		}
+		
+	}()
 }
 
