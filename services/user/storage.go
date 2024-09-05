@@ -1,8 +1,10 @@
 package user
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+
 	// "log"
 
 	_ "github.com/lib/pq"
@@ -16,7 +18,7 @@ type Storage struct {
 
 type Store interface {
 	CreateUser(*types.User, string) error
-	GetUserByEmail(string) (*types.User, error)
+	GetUserByEmail(context.Context ,string) (*types.User, error)
 }
 
 func NewStorage(db *sql.DB) *Storage{
@@ -34,7 +36,7 @@ func(s *Storage) CreateUser(user *types.User,  password string,) error{
 	return nil
 }
 
-func (s *Storage) GetUserByEmail(email string) (*types.User, error) {
+func (s *Storage) GetUserByEmail(ctx context.Context, email string) (*types.User, error) {
 	rows, err := s.db.Query("SELECT * FROM users WHERE email = $1", email)
 	if err != nil {
 		return nil, err

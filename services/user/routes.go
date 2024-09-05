@@ -3,17 +3,11 @@ package user
 import (
 	"context"
 	"encoding/json"
-
 	"github.com/soufianiso/boxd/types"
-
 	"os"
-
 	"github.com/joho/godotenv"
-
 	"log"
-	// "encoding/json"
 	"net/http"
-
 	"github.com/gorilla/mux"
 	"github.com/soufianiso/boxd/auth"
 	"github.com/soufianiso/boxd/utils"
@@ -29,7 +23,11 @@ type Handler struct{
 }
 
 func NewHandler(storage Store) *Handler {
-	return &Handler{ storage : storage }
+	return &Handler{ 
+		storage : storage, 
+
+
+	}
 }
 
 func(h *Handler) SetRoutes(r *mux.Router) *mux.Router{
@@ -61,7 +59,7 @@ func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
 }
 
 func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
-    ctx := r.Context()
+	ctx := r.Context()
 	user := new(types.User)
 	// Convert request body to object
 	if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil{
@@ -92,18 +90,8 @@ func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
 		return err
 	}
 
-	select {
-    case <-ctx.Done(): // Handle request cancellation
-        if ctx.Err() == context.Canceled {
-            log.Println("Request was canceled by the client")
-            return nil
-        }
-    }
 	return utils.WriteJson(w, http.StatusCreated, map[string]string{"status":"created"})
 }
-
-
-
 
 
 

@@ -13,24 +13,18 @@ import (
 func main(){
 	godotenv.Load()
 	conn := os.Getenv("postgres")
-	dbchannel := make(chan *sql.DB)
 
-	go func (){
-		db, err := sql.Open("postgres",conn)	
-		if err != nil{
-			log.Fatal(err)
-		}
-		dbchannel <- db
-	}()
-
-	db := <-dbchannel
+	db, err := sql.Open("postgres",conn)	
+	if err != nil{
+		log.Fatal(err)
+	}
 	defer db.Close()
 
 	if err := db.Ping() ; err != nil{
 		log.Fatal(err)
 	}
 
-	app := api.NewServer(":8000",db) 
+	app := api.NewServer(":8000", db) 
 	app.Run()
 }
 

@@ -3,9 +3,13 @@ package api
 import (
 	"database/sql"
 	"net/http"
+
 	"github.com/gorilla/mux"
+
 	// "github.com/gorilla/handlers"
+	"github.com/soufianiso/boxd/services/movies"
 	"github.com/soufianiso/boxd/services/user"
+	"github.com/soufianiso/boxd/utils"
 )
 
 
@@ -29,26 +33,21 @@ func(a Api) Run(){
 
 	userstore := user.NewStorage(a.db)
 	userHandler := user.NewHandler(userstore) 
-
-
 	userHandler.SetRoutes(router)
 
+	moviesStore := movies.NewStorage(a.db)
+	moviesHandler := movies.NewHandler(moviesStore) 
+	moviesHandler.SetRoutes(router)
 
-	http.ListenAndServe(a.port,allowCors(router))
-	return 
+	handler := utils.CORSMiddleware(router)
+	//here top level http stuff
+	s := http.Server{
+		Addr: a.port,	
+		Handler: handler,
+	}
+
+	s.ListenAndServe()
 }
 
-func allowCors(next http.Handler) http.Handler{
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request)  {
-		if r.Method == "OPTIONS" {
-			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173") // Replace with your React app's URL
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-		next.ServeHTTP(w,r)
-	})
-}
 
 
