@@ -42,7 +42,6 @@ func main() {
 	req, _ := http.NewRequest("GET", url, nil)
 
 	req.Header.Add("accept", "application/json")
-	req.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3NjJlNWE2Y2VlOTZlZTU3ZDM1ZWI5N2Y1NTY2YmI1YiIsIm5iZiI6MTcyNTQ2MzQ4Mi4yNjg1MTMsInN1YiI6IjY2ZDE4OTdhNWY1OTQ1ZTA2ODQ1NTZjZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1jaeOhvZtszSRt0wx3eNBVgRR77GVdl6rMzwYNHzhsg")
 
 	res, _ := http.DefaultClient.Do(req)
 
