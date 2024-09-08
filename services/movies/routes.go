@@ -1,49 +1,26 @@
 package movies
 
 import (
+	"log"
 	"net/http"
-
 	"github.com/gorilla/mux"
 )
 
-
-
-type Handler struct{
-	store Store
+func SetRoutes(r *mux.Router, storage Store, logger *log.Logger){
+	r.Handle("/movies", handleListMovies(storage ,logger)).Methods("GET")
+	r.Handle("/register", handleGetMovie(storage, logger)).Methods("GET")
 }
 
-
-
-func MoviesHandler(store Store) *Handler{
-	return &Handler{store: store}
-}
-
-
-
-func (h *Handler) SetRoutes( r *mux.Router) *mux.Router{
-	r.HandleFunc("/movies", h.listMovies).Methods("GET")
-	r.HandleFunc("/movies/{id}", h.listMovieById).Methods("GET")
+func handleListMovies(storage Store, logger *log.Logger) http.Handler{
 	
-	return  r
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		
+	})
 }
 
-func (h *Handler) listMovies(w http.ResponseWriter, r *http.Request ){
-
+func handleGetMovie(storage Store, logger *log.Logger) http.Handler{
 	
-	return  
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	})
 }
-
-
-func (h *Handler) listMovieById(w http.ResponseWriter, r *http.Request ){
-
-	
-
-	return 
-}
-
-
-
-
-
-
-

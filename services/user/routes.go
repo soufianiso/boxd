@@ -2,111 +2,95 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
-	"net/http"
+
+	"github.com/soufianiso/boxd/types"
+
 	"os"
 
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+
+	// "encoding/json"
+	"net/http"
+
+	"github.com/gorilla/mux"
 	"github.com/soufianiso/boxd/auth"
-	"github.com/soufianiso/boxd/types"
 	"github.com/soufianiso/boxd/utils"
 )
 
-// "database/sql"
-
-
-
-
-type Handler struct{
-	logger *log.Logger
-	storage Store
+func SetRoutes(r *mux.Router, storage Store, logger *log.Logger){
+	r.Handle("/login", handleLogin(storage ,logger)).Methods("POST")
+	r.Handle("/register", handleRegister(storage, logger)).Methods("POST")
 }
 
-func UserHandler(logger *log.Logger, storage Store) *Handler {
-	return &Handler{ 
-		storage : storage, 
-		logger : logger, 
-
-
-	}
-}
-
-func(h *Handler) SetRoutes(r *mux.Router) *mux.Router{
-	r.HandleFunc("/login", utils.ErrorHandler(h.handleLogin)).Methods("POST")
-	r.HandleFunc("/register", utils.ErrorHandler(h.handleRegister)).Methods("POST")
-	r.Handle("/test", handleTest(h.logger,h.storage)).Methods("POST")
-	return r
-}
-
-func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
-	user := new(types.User)
-
-	// Convert request body to object
-	if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil {
-		return err
-	}
-
-	_ , err := h.storage.GetUserByEmail(user.Email)
-	if err !=  nil{
-		utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ 
-			Error: "email or password incorrect",
-		})
-
-		return err
-	}
-
-	//create Signed the jwt token and create it 
+func handleLogin(storage Store, logger *log.Logger) http.Handler{
 	godotenv.Load()
 	jwtsecret := os.Getenv("jwtsecret")
+	
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := new(types.User)
+		if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil {
+			logger.Println("failed decoding",err)
+			return 
+		}
+
+		u , err := storage.GetUserByEmail(user.Email)
+		if err !=  nil{
+			logger.Println(err)
+			utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ Error: "email or password is incorrect" })
+			return 
+		}
 
 
-	tokenString, err := auth.Createjwt(user.Email, jwtsecret)
-	if err != nil{
-		return err
-	}
+		if !auth.ComparePasswords(u.Password, []byte(user.Password)) {
+			logger.Println(err)
+			utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ Error: "email or password is incorrect" })
+			return 
+		}
+		
+		tokenString, err := auth.Createjwt(user.Email, jwtsecret)
+		if err != nil{
+			logger.Println(err)
+			return 
+		}
 
-	return utils.WriteJson(w, http.StatusOK , map[string]string{"Authorization": tokenString}) 
+		w.Header().Set("Authorization", "Bearer "+tokenString)	
+		utils.WriteJson(w, http.StatusOK , map[string]string{"Authorization": tokenString}) 
+
+	})
 }
 
-func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
+func handleRegister(storage Store, logger *log.Logger) http.Handler{
 	user := new(types.User)
-	// Convert request body to object
-	if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil{
-		return err
-	}
-	
-	// Checking whether the email exists or not
-	_ , err := h.storage.GetUserByEmail(user.Email)
-	if err ==  nil{
-		return utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ 
-			Error: "email or password incorrect",
-		})
-	}
-	
-	// hash the password
-	hashedPassword, err := auth.HashPassword(user.Password)
-	if err != nil{
-		return err
-	}
-	
-	if err := h.storage.CreateUser(user, hashedPassword) ; err != nil {
-		return err
-	}
 
-	return utils.WriteJson(w, http.StatusCreated, map[string]string{"status":"created"})
-}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		
+		if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil{
+			logger.Println(err)
+			return 
+		}
+		
+		// Checking whether the email exists or not
+		_ , err := storage.GetUserByEmail(user.Email)
+		if err ==  nil{
+			logger.Println("email already exists")
+			utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ Error: "email already exists"})
+			return
+		}
 
+		// hash the password
+		hashedPassword, err := auth.HashPassword(user.Password)
+		if err != nil{
+			logger.Println(err)
+			return 
+		}
+		
+		if err := storage.CreateUser(user, hashedPassword) ; err != nil {
+			logger.Println(err)
+			return
+		}
+		
+		utils.WriteJson(w, http.StatusCreated, map[string]string{"status":"created"})
 
-
-func handleTest(logger *log.Logger, storage Store) http.Handler{
-	logger.Print("test")
-	s := "test"
-	return http.HandlerFunc( 
-			func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprint(w,s)		
-			},
-		)
-	
+	})
 }
