@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -15,31 +14,21 @@ type ApiError struct {
 
 
 // The MiddlewearApi function is a wrapper of my handlers to handler errors 
-func ErrorHandler(f ApiHandler) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request){
-		err := f(w,r)  
-		if err != nil{
-			log.Print(err)
-			WriteError(w, http.StatusInternalServerError, ApiError{Error: "bad request"})
-			return 
-		}
-	}
-}
 
-func WriteJson(w http.ResponseWriter, status int, v any) error{
+func WriteJson(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type","application-json")
 	w.WriteHeader(status)
 
-	err :=  json.NewEncoder(w).Encode(v)
-	return err
+	json.NewEncoder(w).Encode(v)
+	return 
 }
 
-func WriteError(w http.ResponseWriter, status int, v any) error{
+func WriteError(w http.ResponseWriter, status int, v any){
 	w.Header().Set("Content-Type","application-json")
 	w.WriteHeader(status)
 
-	err :=  json.NewEncoder(w).Encode(v)
-	return err
+	json.NewEncoder(w).Encode(v)
+	return  
 }
 
 func CORSMiddleware(next http.Handler) http.Handler {

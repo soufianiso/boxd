@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -10,15 +11,12 @@ import (
 	"github.com/soufianiso/boxd/utils"
 )
 
-func NewServer(db *sql.DB) http.Handler{
+func NewServer(logger *log.Logger, db *sql.DB) http.Handler{
 	router := mux.NewRouter()
 	apiRouter := router.PathPrefix("/api/v1").Subrouter()
 
-	// user service	
-	userstore := user.NewStorage(db)
-	userHandler := user.UserHandler(userstore) 
-	userHandler.SetRoutes(apiRouter)
-
+	userStore := user.NewStorage(db)
+	user.SetRoutes(apiRouter,userStore ,logger)
 
 	// here is top level middleware stuff
 	handler := utils.CORSMiddleware(router)

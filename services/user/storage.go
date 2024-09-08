@@ -49,7 +49,7 @@ func (s *Storage) GetUserByEmail(email string) (*types.User, error) {
 	}
 
 	if u.ID == 0 {
-		return nil, fmt.Errorf("user not found")
+		return nil, fmt.Errorf("email not found")
 	}
 
 	return u, nil
