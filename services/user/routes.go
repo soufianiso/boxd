@@ -23,13 +23,12 @@ func SetRoutes(r *mux.Router, storage Store, logger *log.Logger){
 	r.Handle("/register", handleRegister(storage, logger)).Methods("POST")
 }
 
-
 func handleLogin(storage Store, logger *log.Logger) http.Handler{
-	user := new(types.User)
 	godotenv.Load()
 	jwtsecret := os.Getenv("jwtsecret")
-
+	
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := new(types.User)
 		if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil {
 			logger.Println("failed decoding",err)
 			return 

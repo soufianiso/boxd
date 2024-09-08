@@ -16,10 +16,11 @@ func NewServer(logger *log.Logger, db *sql.DB) http.Handler{
 	apiRouter := router.PathPrefix("/api/v1").Subrouter()
 
 	userStore := user.NewStorage(db)
-	user.SetRoutes(apiRouter,userStore ,logger)
+	user.SetRoutes(apiRouter, userStore, logger)
 
 	// here is top level middleware stuff
-	handler := utils.CORSMiddleware(router)
+	var handler http.Handler
+	handler = utils.CORSMiddleware(router)
 	return handler
 }
 
