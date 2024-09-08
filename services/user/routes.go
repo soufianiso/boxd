@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/soufianiso/boxd/types"
 
 	"os"
@@ -18,10 +19,15 @@ import (
 	"github.com/soufianiso/boxd/utils"
 )
 
-func SetRoutes(r *mux.Router, storage Store, logger *log.Logger){
+func SetRoutes(
+	r *mux.Router, 
+	storage Store, 
+	logger *log.Logger, 
+	redisClient *redis.Client,
+)	{
 	r.Handle("/login", handleLogin(storage ,logger)).Methods("POST")
 	r.Handle("/register", handleRegister(storage, logger)).Methods("POST")
-}
+	}
 
 func handleLogin(storage Store, logger *log.Logger) http.Handler{
 	godotenv.Load()
