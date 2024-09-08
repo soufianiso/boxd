@@ -1,15 +1,16 @@
 package user
 
 import (
-	"context"
 	"encoding/json"
-	"github.com/soufianiso/boxd/types"
-	"os"
-	"github.com/joho/godotenv"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/soufianiso/boxd/auth"
+	"github.com/soufianiso/boxd/types"
 	"github.com/soufianiso/boxd/utils"
 )
 
@@ -19,12 +20,14 @@ import (
 
 
 type Handler struct{
+	logger *log.Logger
 	storage Store
 }
 
-func UserHandler(storage Store) *Handler {
+func UserHandler(logger *log.Logger, storage Store) *Handler {
 	return &Handler{ 
 		storage : storage, 
+		logger : logger, 
 
 
 	}
@@ -33,6 +36,7 @@ func UserHandler(storage Store) *Handler {
 func(h *Handler) SetRoutes(r *mux.Router) *mux.Router{
 	r.HandleFunc("/login", utils.ErrorHandler(h.handleLogin)).Methods("POST")
 	r.HandleFunc("/register", utils.ErrorHandler(h.handleRegister)).Methods("POST")
+	r.Handle("/test", handleTest(h.logger,h.storage)).Methods("POST")
 	return r
 }
 
@@ -44,8 +48,16 @@ func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
 		return err
 	}
 
+	_ , err := h.storage.GetUserByEmail(user.Email)
+	if err !=  nil{
+		utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ 
+			Error: "email or password incorrect",
+		})
+
+		return err
+	}
+
 	//create Signed the jwt token and create it 
-	
 	godotenv.Load()
 	jwtsecret := os.Getenv("jwtsecret")
 
@@ -59,7 +71,6 @@ func(h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) error{
 }
 
 func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
-	ctx := r.Context()
 	user := new(types.User)
 	// Convert request body to object
 	if err := json.NewDecoder(r.Body).Decode(&user) ; err != nil{
@@ -67,13 +78,7 @@ func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
 	}
 	
 	// Checking whether the email exists or not
-	_ , err := h.storage.GetUserByEmail(ctx,user.Email)
-	if err == context.Canceled{
-		// Client canceled the request, so we stop processing
-		log.Println("Request canceled by the client")
-		return nil
-	}
-
+	_ , err := h.storage.GetUserByEmail(user.Email)
 	if err ==  nil{
 		return utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ 
 			Error: "email or password incorrect",
@@ -95,3 +100,13 @@ func(h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) error{
 
 
 
+func handleTest(logger *log.Logger, storage Store) http.Handler{
+	logger.Print("test")
+	s := "test"
+	return http.HandlerFunc( 
+			func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprint(w,s)		
+			},
+		)
+	
+}

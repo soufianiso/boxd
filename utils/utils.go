@@ -19,8 +19,7 @@ func ErrorHandler(f ApiHandler) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request){
 		err := f(w,r)  
 		if err != nil{
-			log.Print(err)
-			WriteError(w, http.StatusInternalServerError, ApiError{Error: "bad request"})
+			log.Println(err)
 			return 
 		}
 	}
@@ -37,9 +36,7 @@ func WriteJson(w http.ResponseWriter, status int, v any) error{
 func WriteError(w http.ResponseWriter, status int, v any) error{
 	w.Header().Set("Content-Type","application-json")
 	w.WriteHeader(status)
-
-	err :=  json.NewEncoder(w).Encode(v)
-	return err
+	return json.NewEncoder(w).Encode(v)
 }
 
 func CORSMiddleware(next http.Handler) http.Handler {
@@ -57,3 +54,5 @@ func CORSMiddleware(next http.Handler) http.Handler {
         next.ServeHTTP(w, r)
     })
 }
+
+
