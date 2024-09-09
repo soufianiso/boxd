@@ -9,6 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/soufianiso/boxd/services/user"
+	"github.com/soufianiso/boxd/services/movies"
 	"github.com/soufianiso/boxd/utils"
 )
 
@@ -18,6 +19,9 @@ func NewServer(logger *log.Logger, db *sql.DB, redisClient *redis.Client ) http.
 
 	userStore := user.NewStorage(db)
 	user.SetRoutes(apiRouter, userStore, logger, redisClient)
+
+	moviesStore := movies.NewStorage(db)
+	movies.SetRoutes(apiRouter, moviesStore, logger, redisClient)
 
 	// here is top level middleware stuff
 	var handler http.Handler
