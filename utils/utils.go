@@ -2,7 +2,7 @@ package utils
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 )
 
@@ -15,28 +15,21 @@ type ApiError struct {
 
 
 // The MiddlewearApi function is a wrapper of my handlers to handler errors 
-func ErrorHandler(f ApiHandler) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request){
-		err := f(w,r)  
-		if err != nil{
-			log.Println(err)
-			return 
-		}
-	}
-}
 
-func WriteJson(w http.ResponseWriter, status int, v any) error{
+func WriteJson(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type","application-json")
 	w.WriteHeader(status)
 
-	err :=  json.NewEncoder(w).Encode(v)
-	return err
+	json.NewEncoder(w).Encode(v)
+	return 
 }
 
-func WriteError(w http.ResponseWriter, status int, v any) error{
+func WriteError(w http.ResponseWriter, status int, v any){
 	w.Header().Set("Content-Type","application-json")
 	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(v)
+
+	json.NewEncoder(w).Encode(v)
+	return  
 }
 
 func CORSMiddleware(next http.Handler) http.Handler {
@@ -54,5 +47,18 @@ func CORSMiddleware(next http.Handler) http.Handler {
         next.ServeHTTP(w, r)
     })
 }
+func Encode(w http.ResponseWriter, r *http.Request, status int, v any) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		return err
+	}
+	return nil
+}
 
-
+func Decode(r *http.Request, v any) (error) {
+	if err := json.NewDecoder(r.Body).Decode(&v); err != nil {
+		return  fmt.Errorf("decode json: %w", err)
+	}
+	return  nil
+}
