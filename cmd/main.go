@@ -48,7 +48,7 @@ func main(){
 		logger.Fatal("redis connection failed", err)
 	}
 
-	log.Printf("redis succecufelly connected")
+	log.Printf("Redis succecufelly connected")
 
 
 	app := api.NewServer(logger, db, redisClient) 
@@ -65,14 +65,12 @@ func main(){
 		
 	} ()
 
-	// listen for system signals for graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
 	<-stop
 	logger.Println("Shutting down the server...")
 
-	// Create a deadline to wait for the server to shut down
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

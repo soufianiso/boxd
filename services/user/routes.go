@@ -25,21 +25,28 @@ func handleLogin(storage Store, logger *log.Logger) http.Handler{
 	jwtsecret := os.Getenv("jwtsecret")
 	
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := new(types.User)
+		user := types.User{}
 		if err := utils.Decode(r, user) ; err != nil{
 			logger.Println(err)
+			return
+		}
+
+		if err := utils.Validate(&user); err != nil{
+			logger.Println(err)
+			utils.Encode(w, r, http.StatusBadRequest, utils.ApiError{ Error: "email or password is incorrect" })
+			return 
 		}
 
 		u , err := storage.GetUserByEmail(user.Email)
 		if err !=  nil{
 			logger.Println(err)
-			utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ Error: "email or password is incorrect" })
+			utils.Encode(w, r, http.StatusBadRequest, utils.ApiError{ Error: "email or password is incorrect" })
 			return 
 		}
 
 		if !auth.ComparePasswords(u.Password, []byte(user.Password)) {
 			logger.Println(err)
-			utils.WriteError(w,http.StatusBadRequest, utils.ApiError{ Error: "email or password is incorrect" })
+			utils.Encode(w, r, http.StatusBadRequest, utils.ApiError{ Error: "email or password is incorrect" })
 			return 
 		}
 		
@@ -62,13 +69,14 @@ func handleRegister(storage Store, logger *log.Logger) http.Handler{
 		user := new(types.User)
 		if err := utils.Decode(r, user) ; err != nil{
 			logger.Println(err)
+			return
 		}
 
 		// Checking whether the email exists or not
-		_ , err := storage.GetUserByEmail(user.Email)
-		if err ==  nil{
+		exists , err := storage.GetUserByEmail(user.Email)
+		if exists !=  nil{
 			logger.Println("email already exists")
-			utils.WriteError(w, http.StatusBadRequest, utils.ApiError{ Error: "email already exists"})
+			utils.Encode(w, r,  http.StatusBadRequest, utils.ApiError{ Error: "email already exists"})
 			return
 		}
 
