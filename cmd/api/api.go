@@ -23,9 +23,9 @@ func NewServer(logger *log.Logger, db *sql.DB, redisClient *redis.Client ) http.
 	moviesStore := movies.NewStorage(db)
 	movies.SetRoutes(apiRouter, moviesStore, logger, redisClient)
 
-	// here is top level middleware stuff
 	var handler http.Handler
 	handler = utils.CORSMiddleware(router)
+	// here is top level middleware stuff
 	return handler
 }
 

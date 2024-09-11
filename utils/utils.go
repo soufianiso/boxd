@@ -2,8 +2,11 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/soufianiso/boxd/types"
 )
 
 type ApiHandler func(http.ResponseWriter, *http.Request) error 
@@ -62,3 +65,17 @@ func Decode(r *http.Request, v any) (error) {
 	}
 	return  nil
 }
+
+
+
+func Validate(u *types.User) error {
+	switch {
+	case len(u.Email) == 0:
+		return errors.New("empty form")
+	case len(u.Password) == 0:
+		return errors.New("empty form")
+	default:
+		return nil
+	}
+}
+

@@ -7,11 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
-	// "os/signal"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -57,28 +52,11 @@ func main(){
 		Handler: app,
 	}
 
-	go func () {
-		log.Printf("listening on %s\n", server.Addr)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Fprintf(os.Stderr, "error listening and serving: %s\n", err)
-		}
-		
-	} ()
-
-	// listen for system signals for graceful shutdown
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-
-	<-stop
-	logger.Println("Shutting down the server...")
-
-	// Create a deadline to wait for the server to shut down
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := server.Shutdown(ctx); err != nil {
-		logger.Fatalf("Server forced to shutdown: %s\n", err)
+	log.Printf("listening on %s\n", server.Addr)
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		fmt.Fprintf(os.Stderr, "error listening and serving: %s\n", err)
 	}
+
 }
 
 
