@@ -67,7 +67,7 @@ func handleLogin(storage Store, logger *log.Logger) http.Handler{
 func handleRegister(storage Store, logger *log.Logger) http.Handler{
 	
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := types.User{}
+		var user types.User
 
 		if err := utils.Decode(r, &user) ; err != nil{
 			logger.Printf("Failed to decode the body: %v", err)
