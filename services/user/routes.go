@@ -25,14 +25,15 @@ func handleLogin(storage Store, logger *log.Logger) http.Handler{
 	jwtsecret := os.Getenv("jwtsecret")
 	
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := types.User{}
+		var user types.User 
+
 		if err := utils.Decode(r, &user) ; err != nil{
 			logger.Printf("Failed to decode request body:%v",err)
 			return
 		}
 
 		if err := utils.Validate(&user); err != nil{
-			logger.Printf("validation failed: %s", user.Email)
+			logger.Printf("validation failed: %s", err)
 			utils.Encode(w, r, http.StatusBadRequest, utils.ApiError{ Error: "email or password is incorrect" })
 			return 
 		}

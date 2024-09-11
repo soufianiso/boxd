@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-
 	"github.com/soufianiso/boxd/types"
+	"github.com/soufianiso/boxd/common"
 )
 
 type ApiHandler func(http.ResponseWriter, *http.Request) error 
@@ -16,6 +16,24 @@ type ApiError struct {
 	Error string
 }
 
+
+// The MiddlewearApi function is a wrapper of my handlers to handler errors 
+
+func WriteJson(w http.ResponseWriter, status int, v any) {
+	w.Header().Set("Content-Type","application-json")
+	w.WriteHeader(status)
+
+	json.NewEncoder(w).Encode(v)
+	return 
+}
+
+func WriteError(w http.ResponseWriter, status int, v any){
+	w.Header().Set("Content-Type","application-json")
+	w.WriteHeader(status)
+
+	json.NewEncoder(w).Encode(v)
+	return  
+}
 
 func CORSMiddleware(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -48,13 +66,18 @@ func Decode(r *http.Request, v any) (error) {
 	return  nil
 }
 
-func Validate(user *types.User) error {
+
+
+func Validate(u *types.User) error {
 	switch {
-	case len(user.Email) == 0:
-		return errors.New("empty form")
-	case len(user.Password) == 0:
-		return errors.New("empty form")
+	case len(u.Email) == 0:
+		return errors.New(common.ErrNameEmpty)
+	case len(u.Password) == 0:
+		return errors.New(common.ErrPasswordEmpty)
 	default:
 		return nil
 	}
 }
+
+
+
